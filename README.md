@@ -1,18 +1,14 @@
 # graphics
 
-[World-of-Tank-imitation-Refactoring](https://github.com/kjejhk37/World-of-Tank-imitation-Refactoring)의 `src/graphics` 계층을 독립 저장소로 분리한 것입니다.
-해당 프로젝트에는 git submodule로 연결되어 있습니다.
+DirectX/OpenGL 등 특정 그래픽스 API를 캡슐화하는 렌더링 계층 라이브러리입니다.
+`platform`을 사용해 Unity/Unreal 같은 "엔진"에 해당하는 위치로, 시각화(View)와 렌더링 파이프라인을 책임집니다.
+이 저장소를 소비하는 상위 프로젝트에는 git submodule 형태로 연결하는 것을 전제로 합니다.
 
 ## 역할
 
-platform을 사용해 DirectX/OpenGL 등 특정 그래픽스 API를 캡슐화하는 계층입니다.
-Unity/Unreal 같은 "엔진"에 해당하는 위치로, 시각화(View)와 렌더링 파이프라인을 책임집니다.
-
-- `projects`(WOT 프로젝트의 실제 콘텐츠/규칙)를 몰라야 합니다. `platform`에는 의존해도 됩니다.
+- 이 저장소를 사용하는 상위 프로젝트의 콘텐츠/규칙을 몰라야 합니다 — `platform`에는 의존해도 됩니다.
 - 공개 인터페이스(`IRenderer` 등)가 주고받는 데이터 타입의 모양은 이 계층이 직접 정의하고 소유합니다.
-- 탱크, 맵 이름 등 WOT 고유 개념은 포함하지 않습니다 — 다른 프로젝트에서도 재사용 가능해야 합니다.
-
-계층 판단 기준의 전체 맥락은 상위 프로젝트의 `docs/architecture/platform_graphics_projects.md`를 참고하세요.
+- 특정 게임/프로젝트 고유 개념(캐릭터, 맵 이름 등)은 포함하지 않습니다 — 어떤 프로젝트에서도 재사용 가능해야 합니다.
 
 ## 구성
 
