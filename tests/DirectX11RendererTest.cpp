@@ -10,6 +10,8 @@
 #include "graphics/renderer/directx11/DirectX11Renderer.h"
 #include "graphics/ui/widgets/IUiBase.h"
 #include "graphics/ui/widgets/IUiElementRegistry.h"
+#include "graphics/ui/widgets/ImageUI.h"
+#include "graphics/ui/widgets/UiElementRegistry.h"
 
 namespace
 {
@@ -70,6 +72,54 @@ TEST(DirectX11RendererTest, SetUiElementRegistryInvokesRenderAllDuringRenderFram
     renderer.RenderFrame(InstanceSnapshot{});
 
     EXPECT_EQ(registry.renderAllCallCount, 1);
+
+    renderer.Shutdown();
+}
+
+TEST(DirectX11RendererTest, LoadTextureReturnsNonNullAndRendersViaImageUI)
+{
+    Win32Window window(640, 480, "DirectX11RendererTest", false);
+
+    DirectX11Renderer renderer(/*forceWarp=*/true);
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    void* const textureHandle = renderer.LoadTexture("assets/textures/test_texture.png");
+    ASSERT_NE(textureHandle, nullptr);
+
+    ImageUI image(textureHandle, 32.0f, 32.0f);
+    UiElementRegistry registry;
+    registry.Add(&image);
+    renderer.SetUiElementRegistry(registry);
+
+    EXPECT_NO_FATAL_FAILURE(renderer.RenderFrame(InstanceSnapshot{}));
+
+    registry.Remove(&image);
+    renderer.UnloadTexture(textureHandle);
+
+    renderer.Shutdown();
+}
+
+TEST(DirectX11RendererTest, LoadTextureReturnsNullForNonExistentFile)
+{
+    Win32Window window(640, 480, "DirectX11RendererTest", false);
+
+    DirectX11Renderer renderer(/*forceWarp=*/true);
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    EXPECT_EQ(renderer.LoadTexture("assets/textures/does_not_exist.png"), nullptr);
+
+    renderer.Shutdown();
+}
+
+TEST(DirectX11RendererTest, UnloadTextureOnUnknownHandleDoesNotCrash)
+{
+    Win32Window window(640, 480, "DirectX11RendererTest", false);
+
+    DirectX11Renderer renderer(/*forceWarp=*/true);
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    int dummy = 0;
+    EXPECT_NO_FATAL_FAILURE(renderer.UnloadTexture(&dummy));
 
     renderer.Shutdown();
 }

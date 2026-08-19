@@ -21,4 +21,6 @@ public:
     void Shutdown() override;
     bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) override;
     void SetUiElementRegistry(IUiElementRegistry& registry) override;
+    void* LoadTexture(const std::string& filePath) override;
+    void UnloadTexture(void* textureHandle) override;
 };

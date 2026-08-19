@@ -126,6 +126,7 @@ add_library(graphics_lib STATIC
     ${CMAKE_SOURCE_DIR}/renderer/RendererFactory.cpp
     ${CMAKE_SOURCE_DIR}/renderer/RendererBackendParser.cpp
     ${CMAKE_SOURCE_DIR}/renderer/ShaderBytecodeLoader.cpp
+    ${CMAKE_SOURCE_DIR}/renderer/WicImageLoader.cpp
     ${CMAKE_SOURCE_DIR}/renderer/directx9/DirectX9Renderer.cpp
     ${CMAKE_SOURCE_DIR}/renderer/directx11/DirectX11Renderer.cpp
     ${CMAKE_SOURCE_DIR}/renderer/directx11/DirectX11ComputeDemo.cpp
@@ -154,8 +155,8 @@ target_include_directories(graphics_lib PUBLIC ${_graphics_parent_dir} ${_platfo
 target_include_directories(graphics_lib PRIVATE ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
 target_link_libraries(graphics_lib PUBLIC platform_lib)
 
-# DirectX 9/11/12는 Windows SDK에 포함된 시스템 라이브러리라 FetchContent 대상이 아니다.
-target_link_libraries(graphics_lib PUBLIC d3d9.lib d3d11.lib d3d12.lib dxgi.lib)
+# DirectX 9/11/12와 WIC(WicImageLoader.cpp)는 Windows SDK에 포함된 시스템 라이브러리라 FetchContent 대상이 아니다.
+target_link_libraries(graphics_lib PUBLIC d3d9.lib d3d11.lib d3d12.lib dxgi.lib windowscodecs.lib)
 
 # --- 셰이더 빌드 파이프라인 (오프라인 컴파일, fxc.exe) ---
 # 배포 시 D3DCompiler_47.dll 의존성을 없애기 위해 HLSL을 런타임이 아닌 빌드 시점에 fxc.exe로 컴파일한다.
@@ -274,6 +275,7 @@ add_executable(tests
     tests/DirectX12ComputeDemoTest.cpp
     tests/UiElementRegistryTest.cpp
     tests/UiWidgetsTest.cpp
+    tests/WicImageLoaderTest.cpp
 )
 target_link_libraries(tests PRIVATE graphics_lib platform_lib gtest_main)
 target_compile_definitions(tests PRIVATE GRAPHICS_SHADER_OUTPUT_DIR="${CMAKE_BINARY_DIR}/$<CONFIG>/shaders/")
@@ -294,4 +296,12 @@ add_custom_command(TARGET tests POST_BUILD
         "${CMAKE_SOURCE_DIR}/tests/fixtures/model_import/cube.obj"
         "$<TARGET_FILE_DIR:tests>/assets/models/cube.obj"
     COMMENT "Copying cube.obj next to tests.exe"
+)
+
+add_custom_command(TARGET tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:tests>/assets/textures"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/tests/fixtures/textures/test_texture.png"
+        "$<TARGET_FILE_DIR:tests>/assets/textures/test_texture.png"
+    COMMENT "Copying test_texture.png next to tests.exe"
 )

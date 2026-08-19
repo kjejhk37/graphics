@@ -3,6 +3,7 @@
 #include <wrl/client.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <d3d9.h>
@@ -47,6 +48,17 @@ public:
     void Shutdown() override;
     bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) override;
     void SetUiElementRegistry(IUiElementRegistry& registry) override;
+
+    // Author: Claude
+    // Description: 스텁 - 항상 nullptr을 반환한다. DX9은 WOT의 실사용 백엔드가 아니라(기본은 DX11)
+    //              이번 사이클에서 실제 텍스처 로딩을 구현하지 않았다 - DX9이 실사용되는 시점에
+    //              새 요청으로 확장한다(IRenderer.h Notes 참고).
+    // Input: filePath - (사용 안 함)
+    // Output: 항상 nullptr.
+    // Notes: IRenderer 계약(컴파일 통과) 만족 목적.
+    // Date: 2026-08-19
+    void* LoadTexture(const std::string& filePath) override;
+    void UnloadTexture(void* textureHandle) override;
 
     // Author: Claude
     // Description: (테스트 전용) 인스턴스 버퍼의 현재 내용을 읽어온다. 프로덕션 렌더링 경로에서는

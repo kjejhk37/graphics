@@ -48,6 +48,19 @@ TEST(DirectX9RendererTest, InitializeSucceedsOnRealHardware)
     renderer.Shutdown();
 }
 
+TEST(DirectX9RendererTest, LoadTextureStubAlwaysReturnsNullptr)
+{
+    Win32Window window(640, 480, "DirectX9RendererTest", false);
+
+    DirectX9Renderer renderer;
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    EXPECT_EQ(renderer.LoadTexture("assets/textures/test_texture.png"), nullptr);
+    EXPECT_NO_FATAL_FAILURE(renderer.UnloadTexture(nullptr));
+
+    renderer.Shutdown();
+}
+
 TEST(DirectX9RendererTest, SetUiElementRegistryInvokesRenderAllDuringRenderFrame)
 {
     Win32Window window(640, 480, "DirectX9RendererTest", false);

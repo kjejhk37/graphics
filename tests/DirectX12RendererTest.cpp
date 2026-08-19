@@ -42,6 +42,19 @@ TEST(DirectX12RendererTest, InitializeSucceedsWithDefaultDriverSelection)
     renderer.Shutdown();
 }
 
+TEST(DirectX12RendererTest, LoadTextureStubAlwaysReturnsNullptr)
+{
+    Win32Window window(640, 480, "DirectX12RendererTest", false);
+
+    DirectX12Renderer renderer(/*forceWarp=*/true);
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    EXPECT_EQ(renderer.LoadTexture("assets/textures/test_texture.png"), nullptr);
+    EXPECT_NO_FATAL_FAILURE(renderer.UnloadTexture(nullptr));
+
+    renderer.Shutdown();
+}
+
 TEST(DirectX12RendererTest, SetUiElementRegistryInvokesRenderAllDuringRenderFrame)
 {
     Win32Window window(640, 480, "DirectX12RendererTest", false);
