@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "graphics/renderer/InstanceSnapshot.h"
 
 class IUiElementRegistry;
@@ -23,6 +25,11 @@ class IUiElementRegistry;
 //        위젯을 등록할 수 있는 유일한 진입점이다 — registry 자체는 위젯의 구체 타입을 몰라 여기서도
 //        DirectX/imgui 타입은 노출되지 않는다. 등록된 registry의 수명은 호출자(WOT) 책임이며,
 //        각 구현체는 참조를 저장만 하고 소유하지 않는다.
+//        LoadTexture/UnloadTexture는 ImageUI가 쓸 텍스처 핸들을 얻는 유일한 경로다 - 반환되는 void*는
+//        구현체별 실제 타입(DX11은 ID3D11ShaderResourceView* 등)을 캐스팅한 값이며, ImageUI가 그대로
+//        ImTextureID로 넘긴다. 실사용 백엔드(DirectX11)만 실제로 구현되어 있고, 다른 백엔드는 항상
+//        nullptr을 반환하는 스텁이다 - 실사용 여부에 따라 향후 요청으로 확장(개별 구현체 주석 참고).
+//        로드 실패는 예외가 아니라 nullptr 반환으로 알린다(이 인터페이스 전반의 관례).
 // Date: 2026-07-19
 class IRenderer
 {
@@ -35,4 +42,6 @@ public:
     virtual void Shutdown() = 0;
     virtual bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
     virtual void SetUiElementRegistry(IUiElementRegistry& registry) = 0;
+    virtual void* LoadTexture(const std::string& filePath) = 0;
+    virtual void UnloadTexture(void* textureHandle) = 0;
 };

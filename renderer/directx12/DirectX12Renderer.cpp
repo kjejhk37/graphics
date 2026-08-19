@@ -638,3 +638,12 @@ void DirectX12Renderer::SetUiElementRegistry(IUiElementRegistry& registry)
 {
     m_uiElementRegistry = &registry;
 }
+
+void* DirectX12Renderer::LoadTexture(const std::string& /*filePath*/)
+{
+    return nullptr;
+}
+
+void DirectX12Renderer::UnloadTexture(void* /*textureHandle*/)
+{
+}

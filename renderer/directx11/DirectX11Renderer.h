@@ -3,6 +3,8 @@
 #include <wrl/client.h>
 
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <d3d11.h>
@@ -34,6 +36,10 @@ class IUiElementRegistry;
 //        그대로 둔다.
 //        SetUiElementRegistry로 등록된 IUiElementRegistry는 RenderFrame 내부에서 m_uiManager->NewFrame()
 //        직후, m_uiManager->Render() 이전에 RenderAll()이 호출된다 - 등록 안 됐으면(nullptr) 아무 일도 하지 않는다.
+//        LoadTexture는 WicImageLoader로 디코딩한 뒤 CreateTexture2D+CreateShaderResourceView로 SRV를
+//        만들어 그 포인터를 void*로 반환한다(ImGui DX11 백엔드가 ImTextureID로 그대로 받아들이는 형태).
+//        만들어진 SRV의 ComPtr은 m_loadedTextures에 보관해 수명을 유지한다 - UnloadTexture 또는
+//        Shutdown에서 해제된다. DX9/12와 달리 이 백엔드만 실제 구현이다(WOT의 실사용/기본 백엔드).
 // Date: 2026-07-19
 class DirectX11Renderer final : public IRenderer
 {
@@ -46,6 +52,8 @@ public:
     void Shutdown() override;
     bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) override;
     void SetUiElementRegistry(IUiElementRegistry& registry) override;
+    void* LoadTexture(const std::string& filePath) override;
+    void UnloadTexture(void* textureHandle) override;
 
     // Author: Claude
     // Description: (테스트 전용) 인스턴스 버퍼(D3D11_USAGE_DYNAMIC, CPU_ACCESS_WRITE만 있어 직접
@@ -65,6 +73,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
     std::unique_ptr<ImGuiManagerDX11> m_uiManager;
     IUiElementRegistry* m_uiElementRegistry = nullptr;
+    std::unordered_map<void*, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> m_loadedTextures;
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;

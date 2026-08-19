@@ -353,3 +353,12 @@ void DirectX9Renderer::SetUiElementRegistry(IUiElementRegistry& registry)
 {
     m_uiElementRegistry = &registry;
 }
+
+void* DirectX9Renderer::LoadTexture(const std::string& /*filePath*/)
+{
+    return nullptr;
+}
+
+void DirectX9Renderer::UnloadTexture(void* /*textureHandle*/)
+{
+}

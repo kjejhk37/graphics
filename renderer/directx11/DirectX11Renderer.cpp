@@ -8,6 +8,7 @@
 #include "platform/model_import/ModelLoader.h"
 #include "platform/model_import/RefCountingCachePolicy.h"
 #include "graphics/renderer/ShaderBytecodeLoader.h"
+#include "graphics/renderer/WicImageLoader.h"
 #include "graphics/ui/widgets/IUiElementRegistry.h"
 
 namespace
@@ -362,6 +363,7 @@ void DirectX11Renderer::OnResize(int width, int height)
 
 void DirectX11Renderer::Shutdown()
 {
+    m_loadedTextures.clear();
     if (m_uiManager)
     {
         m_uiManager->Shutdown();
@@ -391,4 +393,53 @@ bool DirectX11Renderer::HandleUiMessage(HWND windowHandle, UINT message, WPARAM 
 void DirectX11Renderer::SetUiElementRegistry(IUiElementRegistry& registry)
 {
     m_uiElementRegistry = &registry;
+}
+
+void* DirectX11Renderer::LoadTexture(const std::string& filePath)
+{
+    if (!m_device)
+    {
+        return nullptr;
+    }
+
+    WicImageLoader::DecodedImage image;
+    if (!WicImageLoader::Load(filePath, image))
+    {
+        return nullptr;
+    }
+
+    D3D11_TEXTURE2D_DESC textureDesc{};
+    textureDesc.Width = image.width;
+    textureDesc.Height = image.height;
+    textureDesc.MipLevels = 1;
+    textureDesc.ArraySize = 1;
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.Usage = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+    D3D11_SUBRESOURCE_DATA initData{};
+    initData.pSysMem = image.pixels.data();
+    initData.SysMemPitch = image.width * 4;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    if (FAILED(m_device->CreateTexture2D(&textureDesc, &initData, texture.GetAddressOf())))
+    {
+        return nullptr;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+    if (FAILED(m_device->CreateShaderResourceView(texture.Get(), nullptr, srv.GetAddressOf())))
+    {
+        return nullptr;
+    }
+
+    void* const handle = srv.Get();
+    m_loadedTextures[handle] = srv;
+    return handle;
+}
+
+void DirectX11Renderer::UnloadTexture(void* textureHandle)
+{
+    m_loadedTextures.erase(textureHandle);
 }

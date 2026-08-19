@@ -25,3 +25,12 @@ bool OpenGLRenderer::HandleUiMessage(HWND /*windowHandle*/, UINT /*message*/, WP
 void OpenGLRenderer::SetUiElementRegistry(IUiElementRegistry& /*registry*/)
 {
 }
+
+void* OpenGLRenderer::LoadTexture(const std::string& /*filePath*/)
+{
+    return nullptr;
+}
+
+void OpenGLRenderer::UnloadTexture(void* /*textureHandle*/)
+{
+}
