@@ -8,6 +8,8 @@
 #include "platform/math/Vec3.h"
 #include "platform/Win32Window.h"
 #include "graphics/renderer/directx9/DirectX9Renderer.h"
+#include "graphics/ui/widgets/IUiBase.h"
+#include "graphics/ui/widgets/IUiElementRegistry.h"
 
 namespace
 {
@@ -23,6 +25,16 @@ namespace
         }
         return snapshot;
     }
+
+    class SpyUiElementRegistry final : public IUiElementRegistry
+    {
+    public:
+        void Add(IUiBase* /*widget*/) override {}
+        void Remove(IUiBase* /*widget*/) override {}
+        void RenderAll() override { ++renderAllCallCount; }
+
+        int renderAllCallCount = 0;
+    };
 }
 
 // Note: 이 테스트는 실제 그래픽 드라이버(D3DDEVTYPE_HAL)가 있는 환경에서 실행된다고 가정한다.
@@ -33,6 +45,22 @@ TEST(DirectX9RendererTest, InitializeSucceedsOnRealHardware)
 
     DirectX9Renderer renderer;
     EXPECT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+    renderer.Shutdown();
+}
+
+TEST(DirectX9RendererTest, SetUiElementRegistryInvokesRenderAllDuringRenderFrame)
+{
+    Win32Window window(640, 480, "DirectX9RendererTest", false);
+
+    DirectX9Renderer renderer;
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    SpyUiElementRegistry registry;
+    renderer.SetUiElementRegistry(registry);
+    renderer.RenderFrame(InstanceSnapshot{});
+
+    EXPECT_EQ(registry.renderAllCallCount, 1);
+
     renderer.Shutdown();
 }
 

@@ -13,6 +13,8 @@
 #include "graphics/renderer/IRenderer.h"
 #include "graphics/ui/directx12/ImGuiManagerDX12.h"
 
+class IUiElementRegistry;
+
 // Author: Claude
 // Description: IRenderer의 DirectX 12 구현. ID3D12Device 등 D3D12 API 호출은 이 클래스(.h/.cpp) 안에만 존재한다.
 // Input: 생성자 - forceWarp(테스트용, 기본 false) / Initialize - 렌더링 대상 HWND, 클라이언트 영역 너비/높이
@@ -37,6 +39,8 @@
 //        RenderFrame에 넘어온 snapshot.worldMatrices가 비어있지 않으면 Instancing PSO(INSTANCE_WORLD를
 //        D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA로 읽는 입력 슬롯 1)로 N개 인스턴스를 한 번에
 //        그리고, 비어있으면 Baseline PSO로 큐브 하나만 그린다(DX11과 동일한 이유).
+//        SetUiElementRegistry로 등록된 IUiElementRegistry는 RenderFrame 내부에서 m_uiManager->NewFrame()
+//        직후, RenderWithCommandList 이전에 RenderAll()이 호출된다 - 등록 안 됐으면(nullptr) 아무 일도 하지 않는다.
 // Date: 2026-07-19
 class DirectX12Renderer final : public IRenderer
 {
@@ -49,6 +53,7 @@ public:
     void OnResize(int width, int height) override;
     void Shutdown() override;
     bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) override;
+    void SetUiElementRegistry(IUiElementRegistry& registry) override;
 
     // Author: Claude
     // Description: (테스트 전용) 인스턴스 버퍼(업로드 힙, 프로덕션에서도 매핑 유지)의 현재 내용을
@@ -79,6 +84,7 @@ private:
     UINT m_width = 0;
     UINT m_height = 0;
     std::unique_ptr<ImGuiManagerDX12> m_uiManager;
+    IUiElementRegistry* m_uiElementRegistry = nullptr;
 
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;

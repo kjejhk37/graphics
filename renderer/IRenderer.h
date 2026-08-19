@@ -4,6 +4,8 @@
 
 #include "graphics/renderer/InstanceSnapshot.h"
 
+class IUiElementRegistry;
+
 // Author: Claude
 // Description: DirectX/OpenGL 초기화 절차를 감싸는 렌더러 인터페이스. 각 구현체가 외부 그래픽 API를 캡슐화한다.
 // Input: (해당 없음 — 인터페이스)
@@ -17,6 +19,10 @@
 //        렌더러는 IFrameDataPublisher/스레딩 정책을 전혀 모른다(호출자인 main.cpp가
 //        publisher.AcquireReadSnapshot()으로 얻은 순수 데이터만 넘긴다, SRP). InstanceSnapshot은
 //        DirectX 타입이 아닌 순수 데이터 구조체라 위 "DirectX 전용 타입 노출 금지" 원칙 위반이 아니다.
+//        SetUiElementRegistry는 projects(WOT)가 IUiManager의 완전 private 소유 구조를 우회해 2D UI
+//        위젯을 등록할 수 있는 유일한 진입점이다 — registry 자체는 위젯의 구체 타입을 몰라 여기서도
+//        DirectX/imgui 타입은 노출되지 않는다. 등록된 registry의 수명은 호출자(WOT) 책임이며,
+//        각 구현체는 참조를 저장만 하고 소유하지 않는다.
 // Date: 2026-07-19
 class IRenderer
 {
@@ -28,4 +34,5 @@ public:
     virtual void OnResize(int width, int height) = 0;
     virtual void Shutdown() = 0;
     virtual bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+    virtual void SetUiElementRegistry(IUiElementRegistry& registry) = 0;
 };

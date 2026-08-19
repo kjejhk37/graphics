@@ -8,6 +8,7 @@
 #include "platform/model_import/ModelLoader.h"
 #include "platform/model_import/RefCountingCachePolicy.h"
 #include "graphics/renderer/ShaderBytecodeLoader.h"
+#include "graphics/ui/widgets/IUiElementRegistry.h"
 
 namespace
 {
@@ -443,6 +444,11 @@ void DirectX12Renderer::RenderFrame(const InstanceSnapshot& snapshot)
 
     m_uiManager->NewFrame();
 
+    if (m_uiElementRegistry)
+    {
+        m_uiElementRegistry->RenderAll();
+    }
+
     auto& commandAllocator = m_commandAllocators[0];
     auto& commandList = m_commandLists[0];
 
@@ -626,4 +632,9 @@ void DirectX12Renderer::Shutdown()
 bool DirectX12Renderer::HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
 {
     return m_uiManager && m_uiManager->HandleWin32Message(windowHandle, message, wParam, lParam);
+}
+
+void DirectX12Renderer::SetUiElementRegistry(IUiElementRegistry& registry)
+{
+    m_uiElementRegistry = &registry;
 }

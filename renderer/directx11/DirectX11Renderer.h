@@ -12,6 +12,8 @@
 #include "graphics/renderer/IRenderer.h"
 #include "graphics/ui/directx11/ImGuiManagerDX11.h"
 
+class IUiElementRegistry;
+
 // Author: Claude
 // Description: IRenderer의 DirectX 11 구현. ID3D11Device/IDXGISwapChain 등 D3D11 API 호출은 이 클래스(.h/.cpp) 안에만 존재한다.
 // Input: 생성자 - forceWarp(테스트용, 기본 false) / Initialize - 렌더링 대상 HWND, 클라이언트 영역 너비/높이
@@ -30,6 +32,8 @@
 //        한 번에 그리고, 비어있으면(레거시/스모크 테스트 호출) Baseline 파이프라인으로 큐브
 //        하나만 그린다 - 인스턴스 1개짜리 Instancing 드로우와 동등하지만 기존 검증된 경로를
 //        그대로 둔다.
+//        SetUiElementRegistry로 등록된 IUiElementRegistry는 RenderFrame 내부에서 m_uiManager->NewFrame()
+//        직후, m_uiManager->Render() 이전에 RenderAll()이 호출된다 - 등록 안 됐으면(nullptr) 아무 일도 하지 않는다.
 // Date: 2026-07-19
 class DirectX11Renderer final : public IRenderer
 {
@@ -41,6 +45,7 @@ public:
     void OnResize(int width, int height) override;
     void Shutdown() override;
     bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) override;
+    void SetUiElementRegistry(IUiElementRegistry& registry) override;
 
     // Author: Claude
     // Description: (테스트 전용) 인스턴스 버퍼(D3D11_USAGE_DYNAMIC, CPU_ACCESS_WRITE만 있어 직접
@@ -59,6 +64,7 @@ private:
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
     std::unique_ptr<ImGuiManagerDX11> m_uiManager;
+    IUiElementRegistry* m_uiElementRegistry = nullptr;
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;

@@ -11,6 +11,8 @@
 #include "graphics/renderer/IRenderer.h"
 #include "graphics/ui/directx9/ImGuiManagerDX9.h"
 
+class IUiElementRegistry;
+
 // Author: Claude
 // Description: IRenderer의 DirectX 9 구현. IDirect3D9/IDirect3DDevice9 API 호출은 이 클래스(.h/.cpp) 안에만 존재한다.
 // Input: 생성자 - forceInstancingFallback(테스트용, 기본 false) / Initialize - 렌더링 대상 HWND, 클라이언트
@@ -31,6 +33,8 @@
 //        이를 사전에 질의할 캡ability 플래그가 없어, 매 프레임 실제로 시도한 뒤 반환값으로만 성공
 //        여부를 판단한다. 실패하면(또는 forceInstancingFallback=true로 강제하면) Baseline
 //        파이프라인을 인스턴스 개수만큼 반복 호출하는 CPU 폴백으로 전환한다(DrawInstances 참고).
+//        SetUiElementRegistry로 등록된 IUiElementRegistry는 RenderFrame 내부에서 m_uiManager->NewFrame()
+//        직후, m_uiManager->Render() 이전에 RenderAll()이 호출된다 - 등록 안 됐으면(nullptr) 아무 일도 하지 않는다.
 // Date: 2026-07-19
 class DirectX9Renderer final : public IRenderer
 {
@@ -42,6 +46,7 @@ public:
     void OnResize(int width, int height) override;
     void Shutdown() override;
     bool HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam) override;
+    void SetUiElementRegistry(IUiElementRegistry& registry) override;
 
     // Author: Claude
     // Description: (테스트 전용) 인스턴스 버퍼의 현재 내용을 읽어온다. 프로덕션 렌더링 경로에서는
@@ -58,6 +63,7 @@ private:
     Microsoft::WRL::ComPtr<IDirect3DDevice9> m_device;
     HWND m_windowHandle = nullptr;
     std::unique_ptr<ImGuiManagerDX9> m_uiManager;
+    IUiElementRegistry* m_uiElementRegistry = nullptr;
 
     Microsoft::WRL::ComPtr<IDirect3DVertexShader9> m_vertexShader;
     Microsoft::WRL::ComPtr<IDirect3DPixelShader9> m_pixelShader;
