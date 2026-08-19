@@ -21,3 +21,7 @@ bool OpenGLRenderer::HandleUiMessage(HWND /*windowHandle*/, UINT /*message*/, WP
 {
     return false;
 }
+
+void OpenGLRenderer::SetUiElementRegistry(IUiElementRegistry& /*registry*/)
+{
+}

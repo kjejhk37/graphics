@@ -8,6 +8,21 @@
 #include "platform/math/Vec3.h"
 #include "platform/Win32Window.h"
 #include "graphics/renderer/directx12/DirectX12Renderer.h"
+#include "graphics/ui/widgets/IUiBase.h"
+#include "graphics/ui/widgets/IUiElementRegistry.h"
+
+namespace
+{
+    class SpyUiElementRegistry final : public IUiElementRegistry
+    {
+    public:
+        void Add(IUiBase* /*widget*/) override {}
+        void Remove(IUiBase* /*widget*/) override {}
+        void RenderAll() override { ++renderAllCallCount; }
+
+        int renderAllCallCount = 0;
+    };
+}
 
 TEST(DirectX12RendererTest, InitializeSucceedsWithForcedWarp)
 {
@@ -24,6 +39,22 @@ TEST(DirectX12RendererTest, InitializeSucceedsWithDefaultDriverSelection)
 
     DirectX12Renderer renderer;
     EXPECT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+    renderer.Shutdown();
+}
+
+TEST(DirectX12RendererTest, SetUiElementRegistryInvokesRenderAllDuringRenderFrame)
+{
+    Win32Window window(640, 480, "DirectX12RendererTest", false);
+
+    DirectX12Renderer renderer(/*forceWarp=*/true);
+    ASSERT_TRUE(renderer.Initialize(window.Handle(), 640, 480));
+
+    SpyUiElementRegistry registry;
+    renderer.SetUiElementRegistry(registry);
+    renderer.RenderFrame(InstanceSnapshot{});
+
+    EXPECT_EQ(registry.renderAllCallCount, 1);
+
     renderer.Shutdown();
 }
 

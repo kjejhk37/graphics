@@ -8,6 +8,7 @@
 #include "platform/model_import/ModelLoader.h"
 #include "platform/model_import/RefCountingCachePolicy.h"
 #include "graphics/renderer/ShaderBytecodeLoader.h"
+#include "graphics/ui/widgets/IUiElementRegistry.h"
 
 namespace
 {
@@ -261,6 +262,11 @@ void DirectX9Renderer::RenderFrame(const InstanceSnapshot& snapshot)
 
     m_uiManager->NewFrame();
 
+    if (m_uiElementRegistry)
+    {
+        m_uiElementRegistry->RenderAll();
+    }
+
     m_device->Clear(0, nullptr, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
     m_device->BeginScene();
 
@@ -341,4 +347,9 @@ void DirectX9Renderer::Shutdown()
 bool DirectX9Renderer::HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
 {
     return m_uiManager && m_uiManager->HandleWin32Message(windowHandle, message, wParam, lParam);
+}
+
+void DirectX9Renderer::SetUiElementRegistry(IUiElementRegistry& registry)
+{
+    m_uiElementRegistry = &registry;
 }

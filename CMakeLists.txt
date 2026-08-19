@@ -135,6 +135,12 @@ add_library(graphics_lib STATIC
     ${CMAKE_SOURCE_DIR}/ui/directx9/ImGuiManagerDX9.cpp
     ${CMAKE_SOURCE_DIR}/ui/directx11/ImGuiManagerDX11.cpp
     ${CMAKE_SOURCE_DIR}/ui/directx12/ImGuiManagerDX12.cpp
+    ${CMAKE_SOURCE_DIR}/ui/widgets/UiElementRegistry.cpp
+    ${CMAKE_SOURCE_DIR}/ui/widgets/ButtonUI.cpp
+    ${CMAKE_SOURCE_DIR}/ui/widgets/ProgressUI.cpp
+    ${CMAKE_SOURCE_DIR}/ui/widgets/StringFieldUI.cpp
+    ${CMAKE_SOURCE_DIR}/ui/widgets/LabelUI.cpp
+    ${CMAKE_SOURCE_DIR}/ui/widgets/ImageUI.cpp
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
@@ -266,6 +272,8 @@ add_executable(tests
     tests/ImGuiManagerDX12Test.cpp
     tests/DirectX11ComputeDemoTest.cpp
     tests/DirectX12ComputeDemoTest.cpp
+    tests/UiElementRegistryTest.cpp
+    tests/UiWidgetsTest.cpp
 )
 target_link_libraries(tests PRIVATE graphics_lib platform_lib gtest_main)
 target_compile_definitions(tests PRIVATE GRAPHICS_SHADER_OUTPUT_DIR="${CMAKE_BINARY_DIR}/$<CONFIG>/shaders/")

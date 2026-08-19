@@ -8,6 +8,7 @@
 #include "platform/model_import/ModelLoader.h"
 #include "platform/model_import/RefCountingCachePolicy.h"
 #include "graphics/renderer/ShaderBytecodeLoader.h"
+#include "graphics/ui/widgets/IUiElementRegistry.h"
 
 namespace
 {
@@ -233,6 +234,11 @@ void DirectX11Renderer::RenderFrame(const InstanceSnapshot& snapshot)
 
     m_uiManager->NewFrame();
 
+    if (m_uiElementRegistry)
+    {
+        m_uiElementRegistry->RenderAll();
+    }
+
     constexpr float kClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
     m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
     m_context->ClearRenderTargetView(m_renderTargetView.Get(), kClearColor);
@@ -380,4 +386,9 @@ void DirectX11Renderer::Shutdown()
 bool DirectX11Renderer::HandleUiMessage(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
 {
     return m_uiManager && m_uiManager->HandleWin32Message(windowHandle, message, wParam, lParam);
+}
+
+void DirectX11Renderer::SetUiElementRegistry(IUiElementRegistry& registry)
+{
+    m_uiElementRegistry = &registry;
 }
